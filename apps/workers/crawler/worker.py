@@ -145,23 +145,6 @@ async def handle_crawl(envelope: Envelope[CrawlRequest]) -> WorkerReply:
         )
 
 
-async def on_message(message: aio_pika.abc.AbstractIncomingMessage) -> None:
-    async with message.process():
-        body = json.loads(message.body.decode())
-        envelope = Envelope[CrawlRequest](**body)
-        reply = await handle_crawl(envelope)
-
-        if message.reply_to:
-            channel = message.channel
-            await channel.default_exchange.publish(
-                aio_pika.Message(
-                    body=reply.model_dump_json().encode(),
-                    correlation_id=message.correlation_id,
-                ),
-                routing_key=message.reply_to,
-            )
-
-
 async def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logger.info("Starting crawler worker...")
@@ -170,6 +153,21 @@ async def main() -> None:
     async with connection:
         channel = await connection.channel()
         await channel.set_qos(prefetch_count=1)
+
+        async def on_message(message: aio_pika.abc.AbstractIncomingMessage) -> None:
+            async with message.process():
+                body = json.loads(message.body.decode())
+                envelope = Envelope[CrawlRequest](**body)
+                reply = await handle_crawl(envelope)
+
+                if message.reply_to:
+                    await channel.default_exchange.publish(
+                        aio_pika.Message(
+                            body=reply.model_dump_json().encode(),
+                            correlation_id=message.correlation_id,
+                        ),
+                        routing_key=message.reply_to,
+                    )
 
         queue = await channel.declare_queue(QUEUE_CRAWL, durable=True)
         await queue.consume(on_message)

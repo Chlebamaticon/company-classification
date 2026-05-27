@@ -1,70 +1,58 @@
-import { useState } from "react";
 import type { FscCodeAssignment } from "../types";
 
 interface Props {
   codes: FscCodeAssignment[];
 }
 
-function ConfidenceBar({ value }: { value: number }) {
+function ConfidenceBadge({ value }: { value: number }) {
   const pct = Math.round(value * 100);
   const color =
-    pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-yellow-500" : "bg-red-400";
+    pct >= 80
+      ? "text-green-700 bg-green-50"
+      : pct >= 50
+        ? "text-yellow-700 bg-yellow-50"
+        : "text-red-700 bg-red-50";
   return (
-    <div className="flex items-center gap-2">
-      <div className="h-2 w-24 rounded-full bg-gray-200">
-        <div
-          className={`h-2 rounded-full ${color}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs text-gray-500">{pct}%</span>
-    </div>
-  );
-}
-
-function CodeCard({ code, title, rationale, confidence }: FscCodeAssignment) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <span className="font-mono text-2xl font-bold text-blue-700">
-            {code}
-          </span>
-          <p className="mt-1 text-sm font-medium text-gray-800">{title}</p>
-        </div>
-        <ConfidenceBar value={confidence} />
-      </div>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="mt-2 text-xs font-medium text-blue-600 hover:underline"
-      >
-        {open ? "Hide rationale" : "Show rationale"}
-      </button>
-      {open && (
-        <p className="mt-2 text-sm leading-relaxed text-gray-600">
-          {rationale}
-        </p>
-      )}
-    </div>
+    <span
+      className={`inline-block rounded px-2 py-0.5 text-xs font-semibold ${color}`}
+    >
+      {pct}%
+    </span>
   );
 }
 
 export default function ResultsList({ codes }: Props) {
-  if (codes.length === 0) {
+  if (!codes || codes.length === 0) {
     return <p className="text-sm text-gray-500">No FSC codes returned.</p>;
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <h3 className="px-4 py-3 text-sm font-semibold text-gray-600 uppercase tracking-wide border-b border-gray-100">
         Classified FSC Codes
       </h3>
-      {codes.map((c) => (
-        <CodeCard key={c.code} {...c} />
-      ))}
+      <table className="w-full text-sm text-left">
+        <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+          <tr>
+            <th className="px-4 py-2">Code</th>
+            <th className="px-4 py-2">Title</th>
+            <th className="px-4 py-2 text-right">Confidence</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {codes.map((c) => (
+            <tr key={c.code} className="hover:bg-gray-50">
+              <td className="px-4 py-2 font-mono font-bold text-blue-700">
+                {c.code}
+              </td>
+              <td className="px-4 py-2 text-gray-800">{c.title}</td>
+              <td className="px-4 py-2 text-right">
+                <ConfidenceBadge value={c.confidence} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import ResultsList from "../components/ResultsList";
 import type { FscCodeAssignment } from "../types";
 
@@ -20,7 +19,7 @@ const CODES: FscCodeAssignment[] = [
 ];
 
 describe("ResultsList", () => {
-  it("renders all code cards", () => {
+  it("renders all codes in table", () => {
     render(<ResultsList codes={CODES} />);
     expect(screen.getByText("3408")).toBeInTheDocument();
     expect(screen.getByText("5945")).toBeInTheDocument();
@@ -40,25 +39,11 @@ describe("ResultsList", () => {
     expect(screen.getByText("65%")).toBeInTheDocument();
   });
 
-  it("rationale is hidden by default and toggles on click", async () => {
-    const user = userEvent.setup();
+  it("renders table headers", () => {
     render(<ResultsList codes={CODES} />);
-
-    expect(
-      screen.queryByText("Company manufactures CNC machining centers."),
-    ).not.toBeInTheDocument();
-
-    const buttons = screen.getAllByText("Show rationale");
-    await user.click(buttons[0]!);
-
-    expect(
-      screen.getByText("Company manufactures CNC machining centers."),
-    ).toBeInTheDocument();
-
-    await user.click(screen.getAllByText("Hide rationale")[0]!);
-    expect(
-      screen.queryByText("Company manufactures CNC machining centers."),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText("Code")).toBeInTheDocument();
+    expect(screen.getByText("Title")).toBeInTheDocument();
+    expect(screen.getByText("Confidence")).toBeInTheDocument();
   });
 
   it("renders empty state for zero codes", () => {

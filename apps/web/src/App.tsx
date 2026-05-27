@@ -13,9 +13,7 @@ import ResultsList from "./components/ResultsList";
 import ErrorBanner from "./components/ErrorBanner";
 
 const useMock = import.meta.env.VITE_USE_MOCK === "true";
-const api = useMock
-  ? await import("./api.mock")
-  : await import("./api");
+const api = useMock ? await import("./api.mock") : await import("./api");
 
 const INITIAL_STAGES: Record<Stage, StageStatus | "pending"> = {
   ingest: "pending",
@@ -25,8 +23,11 @@ const INITIAL_STAGES: Record<Stage, StageStatus | "pending"> = {
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>("idle");
-  const [stages, setStages] = useState<Record<Stage, StageStatus | "pending">>({ ...INITIAL_STAGES });
+  const [stages, setStages] = useState<Record<Stage, StageStatus | "pending">>({
+    ...INITIAL_STAGES,
+  });
   const [results, setResults] = useState<FscCodeAssignment[]>([]);
+  console.log(results);
   const [errorMsg, setErrorMsg] = useState("");
   const cleanupRef = useRef<(() => void) | null>(null);
 
@@ -39,44 +40,42 @@ export default function App() {
     setErrorMsg("");
   }, []);
 
-  const handleSubmit = useCallback(
-    async (form: FormData) => {
-      setPhase("submitting");
-      setStages({ ...INITIAL_STAGES });
-      setResults([]);
-      setErrorMsg("");
+  const handleSubmit = useCallback(async (form: FormData) => {
+    setPhase("submitting");
+    setStages({ ...INITIAL_STAGES });
+    setResults([]);
+    setErrorMsg("");
 
-      try {
-        const { submission_id } = await api.postSubmission(form);
-        setPhase("streaming");
+    try {
+      const { submission_id } = await api.postSubmission(form);
+      setPhase("streaming");
 
-        const cleanup = api.subscribeEvents(submission_id, {
-          onProgress: (p: ProgressPayload) => {
-            setStages((prev) => ({ ...prev, [p.stage]: p.status }));
-          },
-          onResult: (r) => {
-            setResults(r.fsc_codes);
-            setPhase("done");
-            cleanupRef.current?.();
-          },
-          onError: (e) => {
-            setErrorMsg(e.message);
-            setPhase("error");
-            cleanupRef.current?.();
-          },
-        });
+      const cleanup = api.subscribeEvents(submission_id, {
+        onProgress: (p: ProgressPayload) => {
+          setStages((prev) => ({ ...prev, [p.stage]: p.status }));
+        },
+        onResult: (r) => {
+          setResults(r.fsc_codes ?? []);
+          setPhase("done");
+          cleanupRef.current?.();
+        },
+        onError: (e) => {
+          setErrorMsg(e.message);
+          setPhase("error");
+          cleanupRef.current?.();
+        },
+      });
 
-        cleanupRef.current = cleanup;
-      } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : "Unknown error");
-        setPhase("error");
-      }
-    },
-    [],
-  );
+      cleanupRef.current = cleanup;
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
+      setPhase("error");
+    }
+  }, []);
 
   const showForm = phase === "idle" || phase === "error";
-  const showProgress = phase === "submitting" || phase === "streaming";
+  const showProgress =
+    phase === "submitting" || phase === "streaming" || phase === "done";
   const showResults = phase === "done";
 
   return (

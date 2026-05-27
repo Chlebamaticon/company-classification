@@ -11,17 +11,20 @@ const STAGES: StageInfo[] = [
   { stage: "classify", label: "FSC Classification" },
 ];
 
-function statusIcon(status: StageStatus | "pending"): string {
-  switch (status) {
-    case "started":
-      return "⏳";
-    case "done":
-      return "✅";
-    case "failed":
-      return "❌";
-    default:
-      return "○";
-  }
+function StatusDot({ status }: { status: StageStatus | "pending" }) {
+  const colors: Record<string, string> = {
+    pending: "bg-gray-300",
+    started: "bg-yellow-400 animate-pulse",
+    done: "bg-green-500",
+    failed: "bg-red-500",
+  };
+  return (
+    <span
+      className={`inline-block h-3 w-3 rounded-full ${colors[status] ?? colors.pending}`}
+      role="img"
+      aria-label={status}
+    />
+  );
 }
 
 interface Props {
@@ -39,10 +42,8 @@ export default function ProgressPanel({ stageStatuses }: Props) {
           const status = stageStatuses[stage];
           return (
             <li key={stage} className="flex items-center gap-2 text-sm">
-              <span className="text-base" role="img" aria-label={status}>
-                {statusIcon(status)}
-              </span>
-              <span className={status === "started" ? "font-medium text-blue-600" : "text-gray-700"}>
+              <StatusDot status={status} />
+              <span className={status === "started" ? "font-medium text-yellow-700" : status === "done" ? "text-green-700" : "text-gray-700"}>
                 {label}
               </span>
             </li>

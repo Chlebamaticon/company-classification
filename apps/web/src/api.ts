@@ -18,7 +18,14 @@ export async function postSubmission(
   if (form.email_domain) body.append("email_domain", form.email_domain);
   if (form.file) body.append("file", form.file);
 
-  const res = await fetch(`${BASE}/submissions`, { method: "POST", body });
+  const url = `${BASE}/submissions`;
+  // #region agent log
+  fetch('http://127.0.0.1:7430/ingest/d402c03f-0059-4a70-9c7f-85741876d542',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'63d7fe'},body:JSON.stringify({sessionId:'63d7fe',location:'api.ts:postSubmission:pre',message:'POST submission start',data:{url,company_name:form.company_name,website_url:form.website_url},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+  const res = await fetch(url, { method: "POST", body });
+  // #region agent log
+  fetch('http://127.0.0.1:7430/ingest/d402c03f-0059-4a70-9c7f-85741876d542',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'63d7fe'},body:JSON.stringify({sessionId:'63d7fe',location:'api.ts:postSubmission:post',message:'POST submission response',data:{url,status:res.status,statusText:res.statusText,redirected:res.redirected,location:res.headers.get('location')},timestamp:Date.now(),hypothesisId:'A,B'})}).catch(()=>{});
+  // #endregion
 
   if (!res.ok) {
     const text = await res.text().catch(() => "Unknown error");
@@ -36,14 +43,15 @@ export function parseSSEEvent(
   | { kind: "error"; payload: ErrorPayload }
   | null {
   try {
-    const parsed: unknown = JSON.parse(data);
+    const raw = JSON.parse(data) as Record<string, unknown>;
+    const inner = raw.payload ?? raw;
     switch (type) {
       case "progress":
-        return { kind: "progress", payload: parsed as ProgressPayload };
+        return { kind: "progress", payload: inner as ProgressPayload };
       case "result":
-        return { kind: "result", payload: parsed as ResultPayload };
+        return { kind: "result", payload: inner as ResultPayload };
       case "error":
-        return { kind: "error", payload: parsed as ErrorPayload };
+        return { kind: "error", payload: inner as ErrorPayload };
       default:
         return null;
     }
