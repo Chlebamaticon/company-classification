@@ -1,16 +1,17 @@
 # Active Context
 
-Phase: scaffolding complete. Three agents now build in parallel against the
-contracts in `packages/shared`.
+Phase: Classification Worker agent complete. Remaining: SPA + Ingest/Crawl agents.
 
 Done:
 - Monorepo dirs, `docker-compose.yml`, `.env.example`, `.gitignore`, `Makefile`, `README.md`.
 - `infra/postgres/init.sql` with tables + per-submission NOTIFY trigger.
-- `packages/shared`: full Pydantic message contracts; stub `mq`, `db`, `llm`; complete `fsc` loader.
-- `scripts/parse_fsc_pdf.py` -> `data/fsc_catalog.json` (576 entries, spot-checked).
+- `packages/shared`: messages, fsc (complete); mq, db, llm (implemented).
+- `scripts/parse_fsc_pdf.py` -> `data/fsc_catalog.json` (576 entries).
 - 8 shared-package tests passing.
+- `apps/api/`: FastAPI with `/health`, `POST /submissions`, `GET /submissions/{id}`, SSE `/submissions/{id}/events`.
+- `apps/workers/classifier/`: consumes `classify.requests`, RPC fan-out, LLM classification, FSC validation.
+- Dockerfiles for api + classifier.
 
 Next:
-- SPA agent: `apps/web/` Vite + React + Tailwind, form, SSE subscription, results view.
-- Classification Worker agent: flesh out `shared.mq`/`db`/`llm`, build FastAPI + Classifier.
-- Ingest + Crawl agent: implement `apps/workers/doc_ingest` and `apps/workers/crawler`.
+- SPA agent: `apps/web/`.
+- Ingest + Crawl agent: `apps/workers/doc_ingest` and `apps/workers/crawler`.
