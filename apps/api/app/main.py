@@ -1,5 +1,6 @@
 """FastAPI application for SalesPatriot FSC Classifier."""
 
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -16,7 +17,14 @@ from .routes import submissions, events
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.db = get_engine()
     mq_ctx = connect()
-    app.state.mq = await mq_ctx.__aenter__()
+    for attempt in range(30):
+        try:
+            app.state.mq = await mq_ctx.__aenter__()
+            break
+        except Exception:
+            if attempt == 29:
+                raise
+            await asyncio.sleep(2)
     app.state.mq_channel = await app.state.mq.channel()
     try:
         yield

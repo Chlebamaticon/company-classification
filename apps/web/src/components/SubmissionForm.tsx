@@ -18,11 +18,12 @@ export default function SubmissionForm({ onSubmit, disabled }: Props) {
   const validate = useCallback((): Record<string, string> => {
     const e: Record<string, string> = {};
     if (!companyName.trim()) e.company_name = "Company name is required.";
-    if (!websiteUrl.trim()) e.website_url = "Website URL is required.";
-    else if (!URL_RE.test(websiteUrl.trim()))
+    if (websiteUrl.trim() && !URL_RE.test(websiteUrl.trim()))
       e.website_url = "Enter a valid URL (http:// or https://).";
+    if (!websiteUrl.trim() && !file)
+      e.source = "Provide a Website URL or upload a Document.";
     return e;
-  }, [companyName, websiteUrl]);
+  }, [companyName, websiteUrl, file]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -60,7 +61,7 @@ export default function SubmissionForm({ onSubmit, disabled }: Props) {
 
       <div>
         <label htmlFor="website_url" className="block text-sm font-medium text-gray-700">
-          Website URL <span className="text-red-500">*</span>
+          Website URL
         </label>
         <input
           id="website_url"
@@ -91,7 +92,7 @@ export default function SubmissionForm({ onSubmit, disabled }: Props) {
 
       <div>
         <label htmlFor="file" className="block text-sm font-medium text-gray-700">
-          Supporting Document <span className="text-gray-400">(optional)</span>
+          Supporting Document
         </label>
         <input
           id="file"
@@ -101,6 +102,8 @@ export default function SubmissionForm({ onSubmit, disabled }: Props) {
           className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
         />
       </div>
+
+      {errors.source && <p className="text-sm text-red-600">{errors.source}</p>}
 
       <button
         type="submit"

@@ -14,7 +14,7 @@ export async function postSubmission(
 ): Promise<SubmissionResponse> {
   const body = new FormData();
   body.append("company_name", form.company_name);
-  body.append("website_url", form.website_url);
+  if (form.website_url) body.append("website_url", form.website_url);
   if (form.email_domain) body.append("email_domain", form.email_domain);
   if (form.file) body.append("file", form.file);
 

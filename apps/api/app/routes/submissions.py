@@ -23,10 +23,16 @@ UPLOADS_DIR = os.environ.get("UPLOADS_DIR", "/data/uploads")
 async def create_submission(
     request: Request,
     company_name: str = Form(...),
-    website_url: str = Form(...),
+    website_url: str | None = Form(None),
     email_domain: str | None = Form(None),
     file: UploadFile | None = File(None),
 ):
+    has_url = bool(website_url and website_url.strip())
+    has_file = bool(file and file.filename)
+    if not has_url and not has_file:
+        raise HTTPException(422, "Provide a website URL or upload a document.")
+
+    website_url = website_url.strip() if has_url else None
     sid = uuid.uuid4()
     file_path: str | None = None
 
@@ -34,8 +40,9 @@ async def create_submission(
         upload_dir = Path(UPLOADS_DIR)
         upload_dir.mkdir(parents=True, exist_ok=True)
         file_path = str(upload_dir / f"{sid}.pdf")
-        content = await file.read()
-        Path(file_path).write_bytes(content)
+        with open(file_path, "wb") as dest:
+            while chunk := await file.read(1024 * 1024):
+                dest.write(chunk)
 
     engine = request.app.state.db
     async with engine.begin() as conn:

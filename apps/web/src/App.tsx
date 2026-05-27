@@ -42,7 +42,11 @@ export default function App() {
 
   const handleSubmit = useCallback(async (form: FormData) => {
     setPhase("submitting");
-    setStages({ ...INITIAL_STAGES });
+    setStages({
+      ...INITIAL_STAGES,
+      ...(!form.file ? { ingest: "skipped" as const } : {}),
+      ...(!form.website_url ? { crawl: "skipped" as const } : {}),
+    });
     setResults([]);
     setErrorMsg("");
 

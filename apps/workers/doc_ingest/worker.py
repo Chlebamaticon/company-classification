@@ -88,7 +88,15 @@ async def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logger.info("Starting doc_ingest worker...")
 
-    connection = await aio_pika.connect_robust(amqp_url())
+    for attempt in range(30):
+        try:
+            connection = await aio_pika.connect_robust(amqp_url())
+            break
+        except Exception:
+            if attempt == 29:
+                raise
+            logger.info("RabbitMQ not ready, retrying in 2s...")
+            await asyncio.sleep(2)
     async with connection:
         channel = await connection.channel()
         await channel.set_qos(prefetch_count=1)

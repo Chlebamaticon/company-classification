@@ -17,7 +17,7 @@ export interface SubmissionState {
 }
 
 export type Stage = "ingest" | "crawl" | "classify";
-export type StageStatus = "started" | "done" | "failed";
+export type StageStatus = "started" | "done" | "failed" | "skipped";
 
 export interface ProgressPayload {
   stage: Stage;

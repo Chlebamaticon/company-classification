@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS submissions (
     id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     company_name    text NOT NULL,
-    website_url     text NOT NULL,
+    website_url     text,
     email_domain    text,
     file_path       text,
     status          text NOT NULL DEFAULT 'queued',

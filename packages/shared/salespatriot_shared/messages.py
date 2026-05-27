@@ -69,7 +69,7 @@ class CrawlRequest(_Model):
 
 class ClassifyRequest(_Model):
     company_name: str
-    website_url: str
+    website_url: str | None = None
     email_domain: str | None = None
     has_document: bool = False
 

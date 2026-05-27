@@ -25,10 +25,10 @@ services:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MGMT_PORT:-15672}:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_listener", "5672"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
 
   api:
     build:

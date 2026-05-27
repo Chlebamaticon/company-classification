@@ -204,6 +204,7 @@ async def _classify(
             {"sid": str(sid)},
         )
 
+    await emit_event(engine, sid, "progress", {"stage": "classify", "status": "done"})
     await emit_event(engine, sid, "result", {"fsc_codes": codes})
     log.info("classified %s -> %d codes", sid, len(codes))
 
@@ -221,16 +222,27 @@ async def _on_message(rpc: RpcClient, message: AbstractIncomingMessage) -> None:
         log.info("received classify request for %s", sid)
 
         try:
-            tasks = [_rpc_crawl(rpc, envelope)]
+            tasks: list[asyncio.Task] = []
+            task_labels: list[str] = []
+
+            if envelope.payload.website_url:
+                tasks.append(_rpc_crawl(rpc, envelope))
+                task_labels.append("crawl")
             if envelope.payload.has_document:
                 tasks.append(_rpc_ingest(rpc, envelope))
+                task_labels.append("ingest")
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            crawl_reply = results[0] if not isinstance(results[0], BaseException) else None
-            ingest_reply = None
-            if len(results) > 1 and not isinstance(results[1], BaseException):
-                ingest_reply = results[1]
+            crawl_reply: WorkerReply | None = None
+            ingest_reply: WorkerReply | None = None
+            for label, result in zip(task_labels, results):
+                if isinstance(result, BaseException):
+                    continue
+                if label == "crawl":
+                    crawl_reply = result
+                elif label == "ingest":
+                    ingest_reply = result
 
             await _classify(envelope, ingest_reply, crawl_reply)
 

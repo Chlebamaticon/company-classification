@@ -17,6 +17,7 @@ function StatusDot({ status }: { status: StageStatus | "pending" }) {
     started: "bg-yellow-400 animate-pulse",
     done: "bg-green-500",
     failed: "bg-red-500",
+    skipped: "bg-gray-300",
   };
   return (
     <span
@@ -43,8 +44,8 @@ export default function ProgressPanel({ stageStatuses }: Props) {
           return (
             <li key={stage} className="flex items-center gap-2 text-sm">
               <StatusDot status={status} />
-              <span className={status === "started" ? "font-medium text-yellow-700" : status === "done" ? "text-green-700" : "text-gray-700"}>
-                {label}
+              <span className={status === "started" ? "font-medium text-yellow-700" : status === "done" ? "text-green-700" : status === "skipped" ? "text-gray-400" : "text-gray-700"}>
+                {label}{status === "skipped" && " (skipped)"}
               </span>
             </li>
           );

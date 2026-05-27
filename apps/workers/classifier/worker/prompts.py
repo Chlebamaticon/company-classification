@@ -35,7 +35,7 @@ RESPONSE_SCHEMA: dict = {
 def build_user_payload(
     *,
     company_name: str,
-    website_url: str,
+    website_url: str | None,
     email_domain: str | None,
     features: dict,
     fsc_catalog: list[dict],
@@ -43,7 +43,7 @@ def build_user_payload(
     return {
         "company": {
             "name": company_name,
-            "website_url": website_url,
+            "website_url": website_url or "",
             "email_domain": email_domain or "",
         },
         "features": features,
