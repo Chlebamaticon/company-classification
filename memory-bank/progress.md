@@ -7,11 +7,12 @@
 | Shared message contracts          | done   |
 | FSC catalog parser + JSON         | done   |
 | Shared package unit tests         | done (8 passing) |
-| `shared.mq` implementation        | todo (classification worker agent) |
-| `shared.db` implementation        | todo (classification worker agent) |
-| `shared.llm` implementation       | todo (classification worker agent) |
-| FastAPI service                   | todo (classification worker agent) |
-| Classification Worker             | todo (classification worker agent) |
+| `shared.mq` implementation        | done |
+| `shared.db` implementation        | done |
+| `shared.llm` implementation       | done |
+| FastAPI service                   | done |
+| Classification Worker             | done |
+| Dockerfiles (api + classifier)    | done |
 | Doc Ingest Worker                 | todo (ingest + crawl agent) |
 | Crawl Worker                      | todo (ingest + crawl agent) |
 | React SPA                         | done (18 tests passing, build ok) |

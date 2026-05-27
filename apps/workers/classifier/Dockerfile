@@ -5,7 +5,10 @@ WORKDIR /app
 COPY packages/shared /app/packages/shared
 RUN pip install --no-cache-dir /app/packages/shared
 
-COPY apps/workers/classifier /app/classifier
-RUN pip install --no-cache-dir /app/classifier
+COPY apps/workers/classifier/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-CMD ["python", "-m", "classifier.worker"]
+COPY apps/workers/classifier/worker /app/worker
+COPY data/fsc_catalog.json /app/data/fsc_catalog.json
+
+CMD ["python", "-m", "worker.main"]
