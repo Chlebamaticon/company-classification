@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-salespatriot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-salespatriot}
+      POSTGRES_DB: ${POSTGRES_DB:-salespatriot}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-salespatriot}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-salespatriot}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-salespatriot}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
+    environment:
+      UPLOADS_DIR: /data/uploads
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - uploads:/data/uploads
+
+  classifier:
+    build:
+      context: .
+      dockerfile: apps/workers/classifier/Dockerfile
+    env_file: .env
+    environment:
+      UPLOADS_DIR: /data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - uploads:/data/uploads
+      - ./data/fsc_catalog.json:/app/data/fsc_catalog.json:ro
+
+  doc_ingest:
+    build:
+      context: .
+      dockerfile: apps/workers/doc_ingest/Dockerfile
+    env_file: .env
+    environment:
+      UPLOADS_DIR: /data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - uploads:/data/uploads
+
+  crawler:
+    build:
+      context: .
+      dockerfile: apps/workers/crawler/Dockerfile
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    env_file: .env
+    ports:
+      - "${WEB_PORT:-5173}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  uploads:
