@@ -1,4 +1,4 @@
-.PHONY: help up down logs ps build parse-fsc clean test
+.PHONY: help up down logs ps build parse-fsc clean test test-e2e test-e2e-real
 
 help:
 	@echo "Targets:"
@@ -33,6 +33,16 @@ parse-fsc:
 
 test:
 	cd packages/shared && python3 -m pytest -q
+
+test-e2e:
+	cd apps/web && npx playwright test --project=mock --project=real-api
+
+test-e2e-real:
+	docker compose up --build -d
+	@echo "Waiting for services to be healthy..."
+	@sleep 10
+	cd apps/web && npx playwright test --project=real
+	docker compose down
 
 clean:
 	docker compose down -v

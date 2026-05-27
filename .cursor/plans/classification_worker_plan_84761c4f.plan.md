@@ -41,8 +41,6 @@ todos:
 isProject: false
 ---
 
-
-
 # Agent 2 of 3: Classification Worker + API + Scaffolding
 
 ## Scope and ownership

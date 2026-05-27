@@ -14,4 +14,4 @@
 | Classification Worker             | todo (classification worker agent) |
 | Doc Ingest Worker                 | todo (ingest + crawl agent) |
 | Crawl Worker                      | todo (ingest + crawl agent) |
-| React SPA                         | todo (spa agent) |
+| React SPA                         | done (18 tests passing, build ok) |

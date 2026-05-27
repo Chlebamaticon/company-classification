@@ -10,7 +10,13 @@ Done:
 - `scripts/parse_fsc_pdf.py` -> `data/fsc_catalog.json` (576 entries, spot-checked).
 - 8 shared-package tests passing.
 
+Done (continued):
+- SPA agent: `apps/web/` complete — form, SSE progress, results cards, mock mode, 18 tests, Dockerfile+nginx.
+
+Done (Ingest + Crawl agent):
+- `apps/workers/doc_ingest/`: extract.py, worker.py, prompts.py, Dockerfile, pyproject.toml. 15 tests passing.
+- `apps/workers/crawler/`: url.py, links.py, fetch.py, worker.py, prompts.py, Dockerfile, pyproject.toml. 46 tests passing.
+- `apps/workers/README.md`: worker-smoke runbook with rabbitmqadmin.
+
 Next:
-- SPA agent: `apps/web/` Vite + React + Tailwind, form, SSE subscription, results view.
 - Classification Worker agent: flesh out `shared.mq`/`db`/`llm`, build FastAPI + Classifier.
-- Ingest + Crawl agent: implement `apps/workers/doc_ingest` and `apps/workers/crawler`.

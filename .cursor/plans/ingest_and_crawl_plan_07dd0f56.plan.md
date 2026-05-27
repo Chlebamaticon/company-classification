@@ -41,8 +41,6 @@ todos:
 isProject: false
 ---
 
-
-
 # Agent 3 of 3: Doc Ingest Worker + Crawl Worker
 
 ## Scope and ownership
